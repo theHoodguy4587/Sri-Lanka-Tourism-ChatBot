@@ -1,6 +1,6 @@
 from langchain_community.vectorstores import FAISS
-from embedding_model import embeddings
-from data_loader import chunks
+from src.embedding_model import embeddings
+from src.data_loader import chunks
 
 vector_store = FAISS.from_documents(chunks, embeddings)
 
