@@ -9,7 +9,7 @@ reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 query = "What are the top tourist attractions in Sri Lanka?"
 
-def ask_question(query,top_k=3,max_length=512):
+def ask_question(query,top_k=4,max_length=512):
     
     docs = retriever.invoke(query)
 
@@ -22,19 +22,25 @@ def ask_question(query,top_k=3,max_length=512):
         
    
     prompt = f"""
-    You are a Sri Lanka tourism assistant.
+    You are a knowledgeable Sri Lanka tourism guide.
 
-    Using the context below, answer the question and list important tourist places.
+    Using the context below, answer the question in a detailed and engaging way.
+
+    Include:
+    - A short description of the place
+    - Why it is famous
+    - Key features or attractions
+    - Travel tips if possible
 
     Context:
     {context}
 
     Question: {query}
 
-    Answer with a short list of places.
+    Answer in a well-structured paragraph.
     """
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=max_length)
-    outputs = model.generate(**inputs, max_length=120,num_beams=5)
+    outputs = model.generate(**inputs, max_length=250,min_length=100,num_beams=5,no_repeat_ngram_size=2)
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return answer
