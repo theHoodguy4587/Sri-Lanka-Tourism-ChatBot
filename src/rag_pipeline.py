@@ -1,6 +1,7 @@
 from src.vector_store import retriever
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from sentence_transformers import CrossEncoder
+import re
 
 model_name = "google/flan-t5-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -17,27 +18,36 @@ def ask_question(query,top_k=4,max_length=512):
     scores = reranker.predict(pairs)
     ranked_docs = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
     top_docs = [doc for doc, score in ranked_docs[:top_k]]
-    context = "\n\n".join([doc.page_content for doc in top_docs])
+
+
+    def clean_text(text):
+        text = re.sub(r'\([^)]*\)', '', text)
+        text = re.sub(r'[^A-Za-z0-9.,\s-]', '', text)
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
+    
+    context = "\n\n".join([clean_text(doc.page_content) for doc in top_docs])
 
         
    
     prompt = f"""
-    You are a knowledgeable Sri Lanka tourism guide.
+    You are a Sri Lanka tourism guide.
 
-    Using the context below, answer the question in a detailed and engaging way.
+    Using the context below, explain the place in a clear and natural way.
 
-    Include:
-    - A short description of the place
-    - Why it is famous
-    - Key features or attractions
-    - Travel tips if possible
+    Write 1–2 short paragraphs covering:
+    - what the place is
+    - why it is popular with tourists
+    - main attractions
+
+    Ignore unrelated details.
 
     Context:
     {context}
 
     Question: {query}
 
-    Answer in a well-structured paragraph.
+    Answer:
     """
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=max_length)
