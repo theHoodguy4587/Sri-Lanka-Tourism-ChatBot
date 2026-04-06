@@ -290,19 +290,28 @@ if search_button and query:
     with st.spinner("🔄 Finding the best answer for you..."):
         answer = ask_question(query)
 
-    # Display answer in a nice card
+    # Display answer with improved formatting
     st.markdown("""
     <div class="answer-card">
     """, unsafe_allow_html=True)
 
     st.markdown("### ✨ Answer")
-    st.write(answer)
+
+    # Format answer with better readability
+    answer_text = answer.strip()
+    if answer_text:
+        st.markdown(f"**{answer_text}**")
+    else:
+        st.warning("Could not generate an answer. Please try another question.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Add a divider and suggestion
-    st.markdown("---")
-    st.markdown("**💬 Have another question?** Just type above or select another example!")
+    # Add copy button and suggestion
+    col1, col2 = st.columns(2)
+    with col1:
+        st.button("📋 Copy Answer", key="copy_btn", help="Copy to clipboard")
+    with col2:
+        st.markdown("**💬 Have another question?** Just type above or select another example!")
 
 elif search_button and not query:
     st.warning("⚠️ Please enter a question or select an example question above!")

@@ -10,8 +10,7 @@ reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 query = "What are the top tourist attractions in Sri Lanka?"
 
-def ask_question(query,top_k=4,max_length=512):
-    
+def ask_question(query, top_k=4, max_length=512):
     docs = retriever.invoke(query)
 
     pairs = [(query, doc.page_content) for doc in docs]
@@ -19,38 +18,55 @@ def ask_question(query,top_k=4,max_length=512):
     ranked_docs = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
     top_docs = [doc for doc, score in ranked_docs[:top_k]]
 
-
     def clean_text(text):
+        # Remove content in parentheses but keep main text
         text = re.sub(r'\([^)]*\)', '', text)
-        text = re.sub(r'[^A-Za-z0-9.,\s-]', '', text)
+        # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text)
-        return text.strip()
-    
-    context = "\n\n".join([clean_text(doc.page_content) for doc in top_docs])
+        # Remove leading/trailing whitespace
+        text = text.strip()
+        return text
 
-        
-   
-    prompt = f"""
-    You are a Sri Lanka tourism guide.
+    # Join context with better formatting
+    context_parts = []
+    for doc in top_docs:
+        cleaned = clean_text(doc.page_content)
+        if cleaned and len(cleaned) > 20:  # Filter out very short passages
+            context_parts.append(cleaned)
 
-    Using the context below, explain the place in a clear and natural way.
+    context = "\n".join(context_parts[:3])  # Use top 3 most relevant chunks
 
-    Write 1–2 short paragraphs covering:
-    - what the place is
-    - why it is popular with tourists
-    - main attractions
+    # Improved prompt with better instructions
+    prompt = f"""You are a helpful Sri Lanka tourism expert. Answer the question clearly and concisely using ONLY the context provided.
 
-    Ignore unrelated details.
+Rules:
+- Provide a focused, well-structured answer
+- Use 2-3 sentences maximum
+- Only mention information directly from the context
+- Avoid listing unrelated information
+- If context lacks relevant information, say so clearly
 
-    Context:
-    {context}
+Context:
+{context}
 
-    Question: {query}
+Question: {query}
 
-    Answer:
-    """
+Answer:"""
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=max_length)
-    outputs = model.generate(**inputs, max_length=250,min_length=100,num_beams=5,no_repeat_ngram_size=2)
+    outputs = model.generate(
+        **inputs,
+        max_length=150,  # Reduced for more concise answers
+        min_length=30,
+        num_beams=4,
+        no_repeat_ngram_size=2,
+        early_stopping=True
+    )
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return answer
+
+    # Post-process answer to fix common issues
+    answer = answer.replace(' ,', ',')
+    answer = answer.replace(' .', '.')
+    answer = answer.replace('  ', ' ')
+
+    return answer.strip()
