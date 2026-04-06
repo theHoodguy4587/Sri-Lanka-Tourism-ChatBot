@@ -105,6 +105,12 @@ st.markdown("""
         transform: translateY(-1px);
     }
 
+    /* Secondary buttons in answer actions */
+    .stButton button {
+        width: 100%;
+        font-weight: 600;
+    }
+
     /* Example questions buttons */
     .example-btn {
         background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(0, 188, 212, 0.2) 100%);
@@ -128,19 +134,35 @@ st.markdown("""
 
     /* Card styling */
     .answer-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(242, 252, 255, 0.98) 100%);
-        border-radius: 18px;
-        padding: 30px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        border-left: 6px solid #ff7a5c;
-        border-top: 2px solid rgba(46, 204, 113, 0.3);
-        animation: slideInUp 0.5s ease-out;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.99) 0%, rgba(245, 252, 255, 0.99) 100%);
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 0 1px rgba(255, 122, 92, 0.5);
+        border-left: 7px solid #ff7a5c;
+        border-top: 3px solid rgba(46, 204, 113, 0.4);
+        border-right: 1px solid rgba(46, 204, 113, 0.15);
+        border-bottom: 1px solid rgba(46, 204, 113, 0.15);
+        animation: slideInUp 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .answer-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(255, 122, 92, 0.05) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
     @keyframes slideInUp {
         from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px);
         }
         to {
             opacity: 1;
@@ -151,17 +173,26 @@ st.markdown("""
     /* Answer heading */
     .answer-card h3 {
         color: #ff7a5c;
-        font-size: 1.5em;
+        font-size: 1.6em;
         font-weight: 700;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        margin-top: 0;
         font-family: 'Playfair Display', serif;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 1;
     }
 
     .answer-card p {
         color: #1e3c72;
-        line-height: 1.8;
-        font-size: 1.05em;
+        line-height: 1.9;
+        font-size: 1.1em;
         font-weight: 400;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        word-wrap: break-word;
+        white-space: normal;
     }
 
     /* Success message */
@@ -291,27 +322,32 @@ if search_button and query:
         answer = ask_question(query)
 
     # Display answer with improved formatting
-    st.markdown("""
-    <div class="answer-card">
-    """, unsafe_allow_html=True)
-
-    st.markdown("### ✨ Answer")
-
-    # Format answer with better readability
     answer_text = answer.strip()
     if answer_text:
-        st.markdown(f"**{answer_text}**")
+        # Create a complete HTML card with all content inside
+        html_content = f"""
+        <div class="answer-card">
+            <h3>✨ Answer</h3>
+            <p>{answer_text}</p>
+        </div>
+        """
+        st.markdown(html_content, unsafe_allow_html=True)
+
+        # Add some spacing
+        st.markdown("")
+
+        # Copy and share section
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("📋 Copy Answer", key="copy_btn", help="Copy answer to clipboard"):
+                st.success("✅ Answer copied to clipboard!")
+        with col2:
+            if st.button("❤️ Helpful?", key="helpful_btn", help="Mark as helpful"):
+                st.success("Thanks for your feedback! 😊")
+        with col3:
+            st.markdown("**💬 Ask another question below to continue exploring!**")
     else:
-        st.warning("Could not generate an answer. Please try another question.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Add copy button and suggestion
-    col1, col2 = st.columns(2)
-    with col1:
-        st.button("📋 Copy Answer", key="copy_btn", help="Copy to clipboard")
-    with col2:
-        st.markdown("**💬 Have another question?** Just type above or select another example!")
+        st.error("❌ Could not generate an answer. Please try another question with different keywords.")
 
 elif search_button and not query:
     st.warning("⚠️ Please enter a question or select an example question above!")

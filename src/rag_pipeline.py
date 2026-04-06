@@ -37,13 +37,14 @@ def ask_question(query, top_k=4, max_length=512):
     context = "\n".join(context_parts[:3])  # Use top 3 most relevant chunks
 
     # Improved prompt with better instructions
-    prompt = f"""You are a helpful Sri Lanka tourism expert. Answer the question clearly and concisely using ONLY the context provided.
+    prompt = f"""You are a helpful Sri Lanka tourism expert. Provide detailed, informative answers using ONLY the context provided.
 
 Rules:
-- Provide a focused, well-structured answer
-- Use 2-3 sentences maximum
+- Provide comprehensive information with multiple relevant details
+- Write 3-5 sentences to fully explain the topic
+- Cover different aspects: location, significance, attractions, visitor information
 - Only mention information directly from the context
-- Avoid listing unrelated information
+- Organize information in a logical, readable way
 - If context lacks relevant information, say so clearly
 
 Context:
@@ -56,8 +57,8 @@ Answer:"""
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=max_length)
     outputs = model.generate(
         **inputs,
-        max_length=150,  # Reduced for more concise answers
-        min_length=30,
+        max_length=300,  # Increased for detailed answers
+        min_length=80,
         num_beams=4,
         no_repeat_ngram_size=2,
         early_stopping=True
