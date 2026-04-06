@@ -1,16 +1,308 @@
 import streamlit as st
 from src.rag_pipeline import ask_question
 
-st.title("Sri Lanka Tourism Chatbot 🇱🇰")
+# Configure page
+st.set_page_config(
+    page_title="Sri Lanka Tourism Chatbot",
+    page_icon="🇱🇰",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-query = st.text_input("Ask a question about Sri Lanka Tourism:")
+# Custom CSS for better styling
+st.markdown("""
+    <style>
+    /* Import modern fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 
-if st.button("Ask"):
+    /* Root colors - Sri Lanka inspired */
+    :root {
+        --primary-blue: #1e3c72;
+        --primary-orange: #ff7a5c;
+        --accent-green: #2ecc71;
+        --light-gold: #f7b731;
+        --bg-gradient-start: #0f2027;
+        --bg-gradient-mid: #203a43;
+        --bg-gradient-end: #2c5364;
+    }
 
-    if query:
-        with st.spinner("Finding the best answer..."):
-            answer = ask_question(query)
-        st.success("Here's what I found:")
-        st.write(answer)
-    else:
-        st.warning("Please enter a question to ask.")
+    /* Main container */
+    .main {
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Global text */
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Title styling */
+    h1 {
+        text-align: center;
+        background: linear-gradient(135deg, #ff7a5c 0%, #f7b731 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: 'Playfair Display', serif;
+        font-size: 3em;
+        margin-bottom: 5px;
+        text-shadow: none;
+        font-weight: 700;
+        letter-spacing: 2px;
+    }
+
+    .subtitle {
+        text-align: center;
+        background: linear-gradient(135deg, #2ecc71 0%, #00bcd4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 1.3em;
+        margin-bottom: 40px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    /* Input styling */
+    .stTextInput > div > div > input {
+        border-radius: 15px;
+        border: 2px solid #ff7a5c;
+        padding: 15px 20px;
+        font-size: 1.05em;
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #1e3c72;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 122, 92, 0.15);
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: #f7b731;
+        box-shadow: 0 6px 25px rgba(255, 122, 92, 0.25);
+    }
+
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #ff7a5c 0%, #f7b731 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 28px;
+        font-weight: 600;
+        font-size: 1.05em;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 6px 20px rgba(255, 122, 92, 0.3);
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 30px rgba(255, 122, 92, 0.4);
+    }
+
+    .stButton > button:active {
+        transform: translateY(-1px);
+    }
+
+    /* Example questions buttons */
+    .example-btn {
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(0, 188, 212, 0.2) 100%);
+        border: 2px solid #2ecc71;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin: 8px 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: white;
+        font-weight: 500;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .example-btn:hover {
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.4) 0%, rgba(0, 188, 212, 0.4) 100%);
+        border-color: #00bcd4;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+    }
+
+    /* Card styling */
+    .answer-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(242, 252, 255, 0.98) 100%);
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        border-left: 6px solid #ff7a5c;
+        border-top: 2px solid rgba(46, 204, 113, 0.3);
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Answer heading */
+    .answer-card h3 {
+        color: #ff7a5c;
+        font-size: 1.5em;
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .answer-card p {
+        color: #1e3c72;
+        line-height: 1.8;
+        font-size: 1.05em;
+        font-weight: 400;
+    }
+
+    /* Success message */
+    .stSuccess {
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(0, 188, 212, 0.15) 100%);
+        border-left: 4px solid #2ecc71;
+        padding: 15px;
+    }
+
+    /* Section headers */
+    h2 {
+        color: #ff7a5c;
+        font-family: 'Playfair Display', serif;
+        font-size: 2em;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    h3 {
+        color: #2ecc71;
+        font-weight: 600;
+        font-size: 1.3em;
+    }
+
+    /* Horizontal divider */
+    hr {
+        border: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #ff7a5c, transparent);
+        margin: 30px 0;
+    }
+
+    /* Sidebar styling */
+    .sidebar .block-container {
+        background: rgba(30, 60, 114, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+    }
+
+    /* Info boxes */
+    .stInfo {
+        background: linear-gradient(135deg, rgba(30, 60, 114, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%);
+        border-radius: 12px;
+        border-left: 4px solid #2ecc71;
+        padding: 15px;
+    }
+
+    /* Spinner animation */
+    .stSpinner {
+        text-align: center;
+    }
+
+    /* Text styling */
+    .stMarkdown {
+        font-family: 'Poppins', sans-serif;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Header section
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("<h1>🇱🇰 Sri Lanka Tourism Chatbot</h1>", unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">✨ Discover the Pearl of the Indian Ocean ✨</div>', unsafe_allow_html=True)
+
+st.markdown("---")
+
+# Sidebar
+with st.sidebar:
+    st.markdown("### 📖 About This Chatbot")
+    st.info("🤖 **Your AI-Powered Travel Guide**\n\nAsk anything about Sri Lanka's amazing attractions, culture, travel tips, and hidden gems!")
+
+    st.markdown("### 🎯 How to Use")
+    st.markdown("""
+    1. **Ask a Question** - Type or select from examples below
+    2. **Get Instant Answers** - AI analyzes Sri Lanka tourism data
+    3. **Learn More** - Get detailed, accurate information
+    """)
+
+    st.markdown("### 📍 Search Tips")
+    st.markdown("""
+    - Ask about specific places (beaches, mountains, temples)
+    - Ask about activities and adventure sports
+    - Ask about cultural experiences
+    - Ask about best travel times
+    """)
+
+# Main content
+# Create two columns for input
+col1, col2 = st.columns([4, 1])
+
+with col1:
+    query = st.text_input(
+        "Ask a question about Sri Lanka Tourism:",
+        placeholder="🔍 e.g., What are the best beaches in Sri Lanka?",
+        label_visibility="collapsed"
+    )
+
+with col2:
+    search_button = st.button("🔍 Ask", use_container_width=True)
+
+# Example questions section with better styling
+st.markdown("### 💡 Popular Questions")
+st.markdown("*Click any question or type your own:*")
+
+example_questions = [
+    "🏖️ Best beaches in Sri Lanka?",
+    "🗿 Tell me about Sigiriya Rock",
+    "🌤️ Best time to visit?",
+    "🏛️ Cultural & temple sites",
+    "🪂 Adventure activities"
+]
+
+cols = st.columns(5)
+for idx, question in enumerate(example_questions):
+    with cols[idx]:
+        if st.button(question, key=f"example_{idx}", use_container_width=True):
+            query = question.replace("🏖️ ", "").replace("🗿 ", "").replace("🌤️ ", "").replace("🏛️ ", "").replace("🪂 ", "")
+            search_button = True
+
+# Process query
+if search_button and query:
+    st.markdown("---")
+    with st.spinner("🔄 Finding the best answer for you..."):
+        answer = ask_question(query)
+
+    # Display answer in a nice card
+    st.markdown("""
+    <div class="answer-card">
+    """, unsafe_allow_html=True)
+
+    st.markdown("### ✨ Answer")
+    st.write(answer)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Add a divider and suggestion
+    st.markdown("---")
+    st.markdown("**💬 Have another question?** Just type above or select another example!")
+
+elif search_button and not query:
+    st.warning("⚠️ Please enter a question or select an example question above!")

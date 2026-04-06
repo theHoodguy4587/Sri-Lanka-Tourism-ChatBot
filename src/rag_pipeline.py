@@ -1,4 +1,4 @@
-from src.vector_store import retriever
+from .vector_store import retriever
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from sentence_transformers import CrossEncoder
 import re
