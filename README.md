@@ -1,6 +1,6 @@
-��# 🇱🇰 Sri Lanka Tourism RAG Chatbot
+# 🇱🇰 Sri Lanka Tourism RAG Chatbot
 
-An intelligent Retrieval-Augmented Generation (RAGchatbot that provides context-aware answers about tourism in Sri Lanka using web-scraped data, semantic search, and transformer-based language models.
+An intelligent Retrieval-Augmented Generation (RAG) chatbot that provides context-aware answers about tourism in Sri Lanka using web-scraped data, semantic search, and transformer-based language models.
 
 ---
 
@@ -57,7 +57,7 @@ The dataset was collected using web scraping from publicly available tourism-rel
 ### Before Cleaning:
 
 ```
-Adam’s Peak (IAST...Sinhala text... symbols...
+Adam’s Peak (IAST...) Sinhala text... symbols...
 ```
 
 ### After Cleaning:
